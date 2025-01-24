@@ -21,8 +21,8 @@ function activate(context) {
 	});
 
 	const get_config = vscode.commands.registerCommand('code2ghost.getConfig', function () {
-		const { url, key } = getConfig(context);
-		vscode.window.showInformationMessage(`URL: ${url}, Key: ${key}`);
+		const { bareUrl, key } = getConfig(context);
+		vscode.window.showInformationMessage(`URL: ${bareUrl}, Key: ${key}`);
 	});
 
 	const create_post_current_editor_draft = vscode.commands.registerCommand('code2ghost.createPostCurrentEditorDraft', async function () {
@@ -95,7 +95,7 @@ async function createPost(context, publish) {
 	});
 
 	// Make an authenticated request to create a post
-	const url = 'https://' + bareUrl + '/ghost/api/admin/posts/?source=html';
+	const url = bareUrl + '/ghost/api/admin/posts/?source=html';
 	const headers = { Authorization: `Ghost ${token}` };
 	const payload = {
 		posts: [{
@@ -118,7 +118,7 @@ async function createPost(context, publish) {
 	if (res.status != 201) {
 		vscode.window.showErrorMessage('Failed to create post.');
 	} else {
-		vscode.window.showInformationMessage('Created Post successful at ' + `[https://${bareUrl}/ghost/#/editor/post/${res.data.posts[0].id}](https://${bareUrl}/ghost/#/editor/post/${res.data.posts[0].id})`);
+		vscode.window.showInformationMessage('Created Post successful at ' + `[${bareUrl}/ghost/#/editor/post/${res.data.posts[0].id}](https://${bareUrl}/ghost/#/editor/post/${res.data.posts[0].id})`);
 	}
 }
 
