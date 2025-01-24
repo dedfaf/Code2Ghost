@@ -2,7 +2,12 @@
   "name": "code2ghost",
   "displayName": "Code2Ghost",
   "description": "A extension to publish local MD files to Ghost CMS",
+  "publisher": "dedfaf",
   "version": "0.0.1",
+    "repository": {
+    "type": "git",
+    "url": "https://github.com/dedfaf/code2ghost.git"
+  },
   "engines": {
     "vscode": "^1.96.0"
   },
