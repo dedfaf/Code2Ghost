@@ -1,38 +1,22 @@
-// The module 'vscode' contains the VS Code extensibility API
-
-// Import the module and reference it with the alias vscode in your code below
 const vscode = require('vscode');
 const jwt = require('jsonwebtoken');
 const axios = require('axios');
 const marked = require('marked');
-const fs = require('fs');
 const crypto = require('crypto');
 const algorithm = 'aes-256-cbc';
 const secretKey = vscode.workspace.getConfiguration().get('code2ghost.secretKey');
 const iv = crypto.randomBytes(16);
 
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
-
 /**
  * @param {vscode.ExtensionContext} context
  */
 function activate(context) {
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	// console.log('Congratulations, your extension "code2ghost" is now active!');
-	// console.log('Secret Key:' + secretKey);
-
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with  registerCommand
-	// The commandId parameter must match the command field in package.json
-
 	const set_config = vscode.commands.registerCommand('code2ghost.setConfig', async function () {
 		vscode.window.showInformationMessage('Setting Config...');
-		const url = await vscode.window.showInputBox({ prompt: 'Enter Ghost URL' });
-		const key = await vscode.window.showInputBox({ prompt: 'Enter Admin API Key' });
+		const url = await vscode.window.showInputBox({ prompt: 'Enter API URL' });
+		const key = await vscode.window.showInputBox({ prompt: 'Enter Admin API key' });
 		setConfig(context, url, key);
 	});
 
@@ -57,7 +41,6 @@ function activate(context) {
 	context.subscriptions.push(create_post_current_editor_publish);
 }
 
-// This method is called when your extension is deactivated
 function deactivate() {}
 
 function setConfig(context, url, key) {

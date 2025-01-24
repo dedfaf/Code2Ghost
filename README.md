@@ -1,65 +1,13 @@
 # code2ghost README
 
-This is the README for your extension "code2ghost". After writing up a brief description, we recommend including the following sections.
+<!-- market link -->
 
-## Features
+This is a VSCode plugin used to upload the currently opened markdown file to your [GhostCMS](https://ghost.org/) via the [Ghost API](https://ghost.org/docs/admin-api). I have never . This plugin has not been widely tested yet, please feel free to submit issues or contribute code.
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+## How to use
 
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
-
-## Requirements
-
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
-
-## Extension Settings
-
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+1. Install the extension in code.
+2. Go to the settings and find `Code2Ghost: Secret Key`, then generate a sufficiently long secret key. Please try to avoid using the default value.
+3. Go to the backend setting of your Ghost website, find the `Integrations` tab under `Advanced`, and add a new custom integration. Typically, this can be found at: <https://your.ghost.website/ghost/#/settings/integrations/new>
+4. Run the command `Code2Ghost: Set Config` to set the `API URL` and `Admin API key`. The admin key will be stored in the VSCode `globalState` using AES-256-CBC encryption.
+5. Open the markdown file you want to post and stay focus on it. Run `Code2Ghost: Create and Draft Post Using Current Editor's File` or `Code2Ghost: Create and Publish Post Using Current Editor's File` and wait, you will get a link to the post if the post is created successful.

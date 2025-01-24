@@ -25,11 +25,11 @@
     "commands": [
       {
         "command": "code2ghost.setConfig",
-        "title": "Set Config"
+        "title": "Code2Ghost: Set Config"
       },
       {
         "command": "code2ghost.getConfig",
-        "title": "Get Config"
+        "title": "Code2Ghost: Get Config"
       },
       {
         "command": "code2ghost.createPostCurrentEditorDraft",
