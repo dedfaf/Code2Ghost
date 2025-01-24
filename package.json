@@ -36,8 +36,16 @@
         "title": "Get Config"
       },
       {
-        "command": "code2ghost.createPost",
-        "title": "Create Post"
+        "command": "code2ghost.createPostCurrentEditorDraft",
+        "title": "Code2Ghost: Create and Draft Post Using Current Editor's File"
+      },
+      {
+        "command": "code2ghost.createPostCurrentEditorPublish",
+        "title": "Code2Ghost: Create and Publish Post Using Current Editor's File"
+      },
+      {
+        "command": "code2ghost.getEditor",
+        "title": "Get Editor"
       }
     ]
   },
@@ -57,6 +65,7 @@
   "dependencies": {
     "axios": "^1.7.9",
     "crypto": "^1.0.1",
-    "jsonwebtoken": "^9.0.2"
+    "jsonwebtoken": "^9.0.2",
+    "marked": "^15.0.6"
   }
 }
