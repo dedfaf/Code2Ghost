@@ -8,7 +8,6 @@ const marked = require('marked');
 const fs = require('fs');
 const crypto = require('crypto');
 const algorithm = 'aes-256-cbc';
-// const secretKey = 'vOVH6sdmpNWjRRIqCc7rdxs01lwHzfr3';
 const secretKey = vscode.workspace.getConfiguration().get('code2ghost.secretKey');
 const iv = crypto.randomBytes(16);
 
@@ -23,18 +22,12 @@ function activate(context) {
 
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "code2ghost" is now active!');
-	console.log('Secret Key:' + secretKey);
+	// console.log('Congratulations, your extension "code2ghost" is now active!');
+	// console.log('Secret Key:' + secretKey);
 
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with  registerCommand
 	// The commandId parameter must match the command field in package.json
-	const disposable = vscode.commands.registerCommand('code2ghost.helloWorld', function () {
-		// The code you place here will be executed every time your command is executed
-
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from Code2Ghost!');
-	});
 
 	const set_config = vscode.commands.registerCommand('code2ghost.setConfig', async function () {
 		vscode.window.showInformationMessage('Setting Config...');
@@ -58,17 +51,10 @@ function activate(context) {
 		createPost(context, 1);
 	});	
 
-	const get_editor = vscode.commands.registerCommand('code2ghost.getEditor', function () {
-		vscode.window.showInformationMessage('Getting Editor...');
-		getEditor();
-	});
-
-	context.subscriptions.push(disposable);
 	context.subscriptions.push(set_config);
 	context.subscriptions.push(get_config);
 	context.subscriptions.push(create_post_current_editor_draft);
 	context.subscriptions.push(create_post_current_editor_publish);
-	context.subscriptions.push(get_editor);
 }
 
 // This method is called when your extension is deactivated
@@ -131,17 +117,26 @@ async function createPost(context, publish) {
 	const payload = {
 		posts: [{
 			title: postTitle,
-			// html: "<p>My post content. Work in progress...</p>",
-			html: html,
-			// status: "published"
+			html: html
 		}]
 	};
 	if (publish) {
 		payload.posts[0].status = "published";
 	}
-	axios.post(url, payload, { headers })
-		.then(response => console.log(response))
-		.catch(error => console.error(error));
+	let res;
+	try {
+		res = await axios.post(url, payload, { headers });
+	} catch (error) {
+		console.error(error);
+		vscode.window.showErrorMessage('Failed to create post.');
+		return;
+	}
+	
+	if (res.status != 201) {
+		vscode.window.showErrorMessage('Failed to create post.');
+	} else {
+		vscode.window.showInformationMessage('Created Post successful at ' + `[https://${bareUrl}/ghost/#/editor/post/${res.data.posts[0].id}](https://${bareUrl}/ghost/#/editor/post/${res.data.posts[0].id})`);
+	}
 }
 
 async function getEditor() {
@@ -151,7 +146,6 @@ async function getEditor() {
 		const fileName = editor.document.fileName;
 		const fileContent = editor.document.getText();
 		const html = marked.parse(fileContent);
-		// console.log(html);
 		
 		// TODO: Use a more efficiency way to identifiy title
 		const resolvedHtml = await html;

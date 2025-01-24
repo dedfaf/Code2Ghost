@@ -24,10 +24,6 @@
     },
     "commands": [
       {
-        "command": "code2ghost.helloWorld",
-        "title": "Hello World"
-      },
-      {
         "command": "code2ghost.setConfig",
         "title": "Set Config"
       },
@@ -42,10 +38,6 @@
       {
         "command": "code2ghost.createPostCurrentEditorPublish",
         "title": "Code2Ghost: Create and Publish Post Using Current Editor's File"
-      },
-      {
-        "command": "code2ghost.getEditor",
-        "title": "Get Editor"
       }
     ]
   },
