@@ -1,6 +1,8 @@
 # code2ghost README
 
-<!-- market link -->
+[View my blog at my Ghost](https://necro.dedfaf.tech/guan-yu-code2ghost-2/)
+
+<https://marketplace.visualstudio.com/items?itemName=dedfaf.code2ghost>
 
 This is a VSCode plugin used to upload the currently opened markdown file to your [GhostCMS](https://ghost.org/) via the [Ghost API](https://ghost.org/docs/admin-api). I have never . This plugin has not been widely tested yet, please feel free to submit issues or contribute code.
 
