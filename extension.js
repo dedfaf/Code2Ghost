@@ -118,7 +118,7 @@ async function createPost(context, publish) {
 	if (res.status != 201) {
 		vscode.window.showErrorMessage('Failed to create post.');
 	} else {
-		vscode.window.showInformationMessage('Created Post successful at ' + `[${bareUrl}/ghost/#/editor/post/${res.data.posts[0].id}](https://${bareUrl}/ghost/#/editor/post/${res.data.posts[0].id})`);
+		vscode.window.showInformationMessage('Created Post successful at ' + `[${bareUrl}/ghost/#/editor/post/${res.data.posts[0].id}](${bareUrl}/ghost/#/editor/post/${res.data.posts[0].id})`);
 	}
 }
 
