@@ -26,7 +26,7 @@ function activate(context) {
 	});
 
 	const create_post_current_editor_draft = vscode.commands.registerCommand('code2ghost.createPostCurrentEditorDraft', async function () {
-		vscode.window.showInformationMessage('Creating Post...');
+		// vscode.window.showInformationMessage('Creating Post...');
 		createPost(context, 0);	
 	});
 
@@ -73,53 +73,63 @@ function decrypt(text) {
 
 async function createPost(context, publish) {
 	
-	const { bareUrl, key } = getConfig(context);
+	vscode.window.withProgress(
+		{
+			location: vscode.ProgressLocation.Notification,
+			title: 'Creating Post...',
+			cancellable: false
+		},
+		async (progress, token) => {
+			const { bareUrl, key } = getConfig(context);
 
-	const { title, html } = await getEditor();
+			const { title, html } = await getEditor();
 
-	const postTitle = await vscode.window.showInputBox({ prompt: 'Enter Post Title', value: title });
-	if (!postTitle) {
-		vscode.window.showInformationMessage('Post creation cancelled.');
-		return;
-	}
-	
-	// Split the key into ID and SECRET
-	const [id, secret] = key.split(':');	
+			const postTitle = await vscode.window.showInputBox({ prompt: 'Enter Post Title', value: title });
+			if (!postTitle) {
+				vscode.window.showInformationMessage('Post creation cancelled.');
+				return;
+			}
+			
+			// Split the key into ID and SECRET
+			const [id, secret] = key.split(':');	
 
-	// Create the token (including decoding secret)
-	const token = jwt.sign({}, Buffer.from(secret, 'hex'), {
-		keyid: id,
-		algorithm: 'HS256',
-		expiresIn: '5m',
-		audience: `/admin/`
-	});
+			// Create the token (including decoding secret)
+			const authToken = jwt.sign({}, Buffer.from(secret, 'hex'), {
+				keyid: id,
+				algorithm: 'HS256',
+				expiresIn: '5m',
+				audience: `/admin/`
+			});
 
-	// Make an authenticated request to create a post
-	const url = bareUrl + '/ghost/api/admin/posts/?source=html';
-	const headers = { Authorization: `Ghost ${token}` };
-	const payload = {
-		posts: [{
-			title: postTitle,
-			html: html
-		}]
-	};
-	if (publish) {
-		payload.posts[0].status = "published";
-	}
-	let res;
-	try {
-		res = await axios.post(url, payload, { headers });
-	} catch (error) {
-		console.error(error);
-		vscode.window.showErrorMessage('Failed to create post.');
-		return;
-	}
-	
-	if (res.status != 201) {
-		vscode.window.showErrorMessage('Failed to create post.');
-	} else {
-		vscode.window.showInformationMessage('Created Post successful at ' + `[${bareUrl}/ghost/#/editor/post/${res.data.posts[0].id}](${bareUrl}/ghost/#/editor/post/${res.data.posts[0].id})`);
-	}
+			// Make an authenticated request to create a post
+			const url = bareUrl + '/ghost/api/admin/posts/?source=html';
+			const headers = { Authorization: `Ghost ${authToken}` };
+			const payload = {
+				posts: [{
+					title: postTitle,
+					html: html
+				}]
+			};
+			if (publish) {
+				payload.posts[0].status = "published";
+			}
+			let res;
+			try {
+				res = await axios.post(url, payload, { headers });
+			} catch (error) {
+				console.error(error);
+				vscode.window.showErrorMessage('Failed to create post.');
+				return;
+			}
+			
+			if (res.status != 201) {
+				vscode.window.showErrorMessage('Failed to create post.');
+			} else {
+				vscode.window.showInformationMessage('Created Post successful at ' + `[${bareUrl}/ghost/#/editor/post/${res.data.posts[0].id}](${bareUrl}/ghost/#/editor/post/${res.data.posts[0].id})`);
+				// vscode.commands.executeCommand('workbench.action.closeActiveEditor');	
+			}
+		}
+	);
 }
 
 async function getEditor() {
