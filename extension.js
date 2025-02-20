@@ -140,14 +140,16 @@ async function getEditor() {
 		const fileContent = editor.document.getText();
 		const html = marked.parse(fileContent);
 		
+		// Get all images
+		const imageMatches = [...fileContent.matchAll(/!\[([^\]]*)\]\(([^)]+)\)/g)].map(match => match[2]);
+
 		// TODO: Use a more efficiency way to identifiy title
 		const resolvedHtml = await html;
 		const h1Match = resolvedHtml.match(/<h1.*?>(.*?)<\/h1>/);
 		const h1 = h1Match ? h1Match[1] : 'Untitled';
 
 		const resolvedHtmlWithoutTitle = resolvedHtml.replace(/<h1.*?>(.*?)<\/h1>/, '');
-		return { title: h1, html: resolvedHtmlWithoutTitle };
-
+		return { title: h1, html: resolvedHtmlWithoutTitle, images: imageMatches };
 	} else {
 		vscode.window.showInformationMessage('No file is currently open.');
 	}
