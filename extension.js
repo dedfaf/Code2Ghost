@@ -81,14 +81,6 @@ async function createPost(context, publish) {
 		},
 		async (progress, token) => {
 			const { bareUrl, key } = getConfig(context);
-
-			const { title, html } = await getEditor();
-
-			const postTitle = await vscode.window.showInputBox({ prompt: 'Enter Post Title', value: title });
-			if (!postTitle) {
-				vscode.window.showInformationMessage('Post creation cancelled.');
-				return;
-			}
 			
 			// Split the key into ID and SECRET
 			const [id, secret] = key.split(':');	
@@ -100,6 +92,14 @@ async function createPost(context, publish) {
 				expiresIn: '5m',
 				audience: `/admin/`
 			});
+
+			const { title, html } = await getEditor(bareUrl, authToken);
+
+			const postTitle = await vscode.window.showInputBox({ prompt: 'Enter Post Title', value: title });
+			if (!postTitle) {
+				vscode.window.showInformationMessage('Post creation cancelled.');
+				return;
+			}
 
 			// Make an authenticated request to create a post
 			const url = bareUrl + '/ghost/api/admin/posts/?source=html';
@@ -132,24 +132,67 @@ async function createPost(context, publish) {
 	);
 }
 
-async function getEditor() {
+async function uploadImage(filePath, imageUrl, authToken, bareUrl) {
+    const fs = require('fs');
+    const path = require('path');
+    const axios = require('axios');
+    const FormData = require('form-data');
+
+    try {
+		const imagePath = path.resolve(filePath, imageUrl);
+        const image = fs.createReadStream(imagePath);
+        
+        // Prepare FormData
+        const form = new FormData();
+        form.append('file', image);
+        form.append('ref', imageUrl); 
+
+        const uploadUrl = `${bareUrl}/ghost/api/admin/images/upload/`;
+        const headers = {
+            ...form.getHeaders(),
+            Authorization: `Ghost ${authToken}`,
+            'Accept-Version': 'v3',
+        };
+
+        const response = await axios.post(uploadUrl, form, { headers });
+        return response.data;
+    } catch (error) {
+        console.error('Image upload failed:', error);
+        throw new Error('Failed to upload image');
+    }
+}
+
+async function getEditor(bareUrl, authToken) {
 	const editor = vscode.window.activeTextEditor;
 	if (editor) {
-		// const filePath = editor.document.uri.fsPath;
-		const fileName = editor.document.fileName;
-		const fileContent = editor.document.getText();
-		const html = marked.parse(fileContent);
+		const filePath = editor.document.fileName.replace(/[^/\\]*$/, '');
+		var fileContent = editor.document.getText();
 		
 		// Get all images
 		const imageMatches = [...fileContent.matchAll(/!\[([^\]]*)\]\(([^)]+)\)/g)].map(match => match[2]);
 
+		const uploadedImages = {};
+        for (let imageUrl of imageMatches) {
+            try {
+                const uploadedData = await uploadImage(filePath, imageUrl, authToken, bareUrl);
+                const ghostImageUrl = uploadedData.images[0].url; // Get URL in Ghost
+                uploadedImages[imageUrl] = ghostImageUrl;
+
+                // Replace markdown
+                fileContent = fileContent.replace(imageUrl, ghostImageUrl);
+            } catch (error) {
+                console.error(`Failed to upload image: ${imageUrl}`);
+            }
+        }
+
+		const html = marked.parse(fileContent);
 		// TODO: Use a more efficiency way to identifiy title
 		const resolvedHtml = await html;
 		const h1Match = resolvedHtml.match(/<h1.*?>(.*?)<\/h1>/);
 		const h1 = h1Match ? h1Match[1] : 'Untitled';
 
 		const resolvedHtmlWithoutTitle = resolvedHtml.replace(/<h1.*?>(.*?)<\/h1>/, '');
-		return { title: h1, html: resolvedHtmlWithoutTitle, images: imageMatches };
+		return { title: h1, html: resolvedHtmlWithoutTitle};
 	} else {
 		vscode.window.showInformationMessage('No file is currently open.');
 	}
