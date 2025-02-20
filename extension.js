@@ -168,8 +168,12 @@ async function getEditor(bareUrl, authToken) {
 		const filePath = editor.document.fileName.replace(/[^/\\]*$/, '');
 		var fileContent = editor.document.getText();
 		
+		const html = marked.parse(fileContent);
+		var resolvedHtml = await html;
+
 		// Get all images
-		const imageMatches = [...fileContent.matchAll(/!\[([^\]]*)\]\(([^)]+)\)/g)].map(match => match[2]);
+		// const imageMatches = [...fileContent.matchAll(/!\[([^\]]*)\]\(([^)]+)\)/g)].map(match => match[2]);
+		const imageMatches = [...resolvedHtml.matchAll(/<img[^>]*src=["'](.*?)["'][^>]*>/g)].map(match => match[1]);
 
 		const uploadedImages = {};
         for (let imageUrl of imageMatches) {
@@ -179,15 +183,13 @@ async function getEditor(bareUrl, authToken) {
                 uploadedImages[imageUrl] = ghostImageUrl;
 
                 // Replace markdown
-                fileContent = fileContent.replace(imageUrl, ghostImageUrl);
+                resolvedHtml = resolvedHtml.replace(imageUrl, ghostImageUrl);
             } catch (error) {
                 console.error(`Failed to upload image: ${imageUrl}`);
             }
-        }
-
-		const html = marked.parse(fileContent);
+		}
+		
 		// TODO: Use a more efficiency way to identifiy title
-		const resolvedHtml = await html;
 		const h1Match = resolvedHtml.match(/<h1.*?>(.*?)<\/h1>/);
 		const h1 = h1Match ? h1Match[1] : 'Untitled';
 
