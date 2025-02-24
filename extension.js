@@ -36,15 +36,15 @@ function activate(context) {
 		createPost(context, 1);
 	});	
 
-	const get_posts = vscode.commands.registerCommand('code2ghost.getPosts', function () {
-		getPosts(context);
+	const get_post = vscode.commands.registerCommand('code2ghost.getPost', function () {
+		getPost(context);
 	});
 
 	context.subscriptions.push(set_config);
 	context.subscriptions.push(get_config);
 	context.subscriptions.push(create_post_current_editor_draft);
 	context.subscriptions.push(create_post_current_editor_publish);
-	context.subscriptions.push(get_posts);
+	context.subscriptions.push(get_post);
 }
 
 function deactivate() {}
@@ -246,7 +246,7 @@ async function getEditor(bareUrl, authToken) {
 async function getPosts(context) {
 	const authToken = getAuthToken(context);
 	const { bareUrl } = getConfig(context);
-	const url = bareUrl + '/ghost/api/admin/posts/';
+	const url = bareUrl + '/ghost/api/admin/posts/?formats=html';
 	const headers = { Authorization: `Ghost ${authToken}` };
 	let res;
 	try {
@@ -256,7 +256,23 @@ async function getPosts(context) {
 		vscode.window.showErrorMessage('Failed to get posts.');
 		return;
 	}
-	console.log(res.data.posts);
+	// console.log(res.data.posts);
+	return res.data.posts;
+}
+
+async function getPost(context) {
+	const posts = await getPosts(context);
+	if (posts) {
+		const postTitles = posts.map(post => post.title);
+		const selectedPostTitle = await vscode.window.showQuickPick(postTitles, { placeHolder: 'Select a post to open' });
+		if (selectedPostTitle) {
+			const selectedPost = posts.find(post => post.title === selectedPostTitle);
+			// const { bareUrl } = getConfig(context);
+			// vscode.env.openExternal(vscode.Uri.parse(`${bareUrl}/ghost/#/editor/post/${selectedPost.id}`));
+			const document = await vscode.workspace.openTextDocument({ content: selectedPost.html, language: 'html' });
+			await vscode.window.showTextDocument(document);
+		}
+	}
 }
 
 module.exports = {

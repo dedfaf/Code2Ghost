@@ -45,8 +45,8 @@
         "title": "Code2Ghost: Create and Publish Post Using Current Editor's File"
       },
       {
-        "command": "code2ghost.getPosts",
-        "title": "Code2Ghost: Get Posts"
+        "command": "code2ghost.getPost",
+        "title": "Code2Ghost: Get Post in new tab"
       }
     ]
   },
