@@ -32,7 +32,7 @@ function activate(context) {
 	});
 
 	const create_post_current_editor_publish = vscode.commands.registerCommand('code2ghost.createPostCurrentEditorPublish', async function () {
-		vscode.window.showInformationMessage('Creating Post...');
+		// vscode.window.showInformationMessage('Creating Post...');
 		createPost(context, 1);
 	});	
 
@@ -72,6 +72,22 @@ function decrypt(text) {
     return decrypted;
 }
 
+function getAuthToken(context) {
+	const { key } = getConfig(context);
+			
+	// Split the key into ID and SECRET
+	const [id, secret] = key.split(':');	
+
+	// Create the token (including decoding secret)
+	const authToken = jwt.sign({}, Buffer.from(secret, 'hex'), {
+		keyid: id,
+		algorithm: 'HS256',
+		expiresIn: '5m',
+		audience: `/admin/`
+	});
+	return authToken;
+};
+
 async function createPost(context, publish) {
 	
 	vscode.window.withProgress(
@@ -81,18 +97,8 @@ async function createPost(context, publish) {
 			cancellable: false
 		},
 		async (progress, token) => {
-			const { bareUrl, key } = getConfig(context);
-			
-			// Split the key into ID and SECRET
-			const [id, secret] = key.split(':');	
-
-			// Create the token (including decoding secret)
-			const authToken = jwt.sign({}, Buffer.from(secret, 'hex'), {
-				keyid: id,
-				algorithm: 'HS256',
-				expiresIn: '5m',
-				audience: `/admin/`
-			});
+			const authToken = getAuthToken(context);
+			const { bareUrl } = getConfig(context);
 
 			const { h1, html, FMtitle, FMauthors, FMtags } = await getEditor(bareUrl, authToken);
 
@@ -231,6 +237,10 @@ async function getEditor(bareUrl, authToken) {
 		vscode.window.showInformationMessage('No file is currently open.');
 	}
 }
+
+// function getPosts() {
+
+// }
 
 module.exports = {
 	activate,
