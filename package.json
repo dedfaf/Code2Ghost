@@ -47,6 +47,10 @@
       {
         "command": "code2ghost.getPost",
         "title": "Code2Ghost: Get Post in new tab"
+      },
+      {
+        "command": "code2ghost.updatePostCurrentEditor",
+        "title": "Code2Ghost: Update Post Using Current Editor's file"
       }
     ]
   },
