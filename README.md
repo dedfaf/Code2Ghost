@@ -4,17 +4,21 @@
 
 <https://marketplace.visualstudio.com/items?itemName=dedfaf.code2ghost>
 
-This is a VSCode plugin used to upload the currently opened markdown file to your [GhostCMS](https://ghost.org/) via the [Ghost API](https://ghost.org/docs/admin-api). I have never . This plugin has not been widely tested yet, please feel free to submit issues or contribute code.
+This is a VSCode plugin used to upload the currently opened markdown file to your [GhostCMS](https://ghost.org/) via the [Ghost API](https://ghost.org/docs/admin-api). This plugin has not been widely tested yet, please feel free to submit issues or contribute code.
 
 ## WARNING
 
 The extension is on a very early stage, so many function is not working right now.
 
-The extension converts markdown files to html first. Currently any metadata in markdown file **is not supported**.
+The extension converts markdown files to html first. Currently **only texts and images in markdown file is supported**.
 
-The extension detects title of the post by using regular expressions to determine the content between `<h1>` and `</h1>`. If your markdown has more than two top titles, the content would go wrong.
+~~The extension detects title of the post by using regular expressions to determine the content between `<h1>` and `</h1>`. If your markdown has more than two top titles, the content would go wrong.~~
+
+2025.2.24: if `title` is provided in front-matter, title won't be asked when creating post. I suggest to set title in front matter instead of using h1.
 
 **Since the extension is in early dev, the version in marketplace will usually be outdated, please always build from the source**
+
+## Features
 
 ## How to use
 
@@ -28,9 +32,10 @@ The extension detects title of the post by using regular expressions to determin
 
 The update Process: 
 1. run `Code2Ghost: Get Post in new tab` to get the post you want to update. 
-    This will gets you new editor tab with front matter (contains post `id` & `updated_at`), which is needed for the update process.
-2. run `Code2Ghost: Update Post Using Current Editor's file`.
 
-Continuous update in same editor tab is cuurently not allowed because `updated_at` must be updated since each update.
+    This will gets you new editor tab with front matter (contains post `id` & `updated_at`), which is needed for the update process.
+2. run `Code2Ghost: Update Post Using Current Editor's file` and wait, you will get a link to the post if the post is updated successful.
+
+Continuous update in the same editor tab is cuurently not allowed because `updated_at` must be updated since each update.
 
 > TODO: when post is successfully updated, update the current editor's front matter with the new `updated_at` value.
