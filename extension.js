@@ -96,6 +96,7 @@ async function createPost(context, publish) {
 
 			const { h1, html, FMtitle, FMauthors, FMtags } = await getEditor(bareUrl, authToken);
 
+			// if title is provided in the front matter, title of the post won't be asked.
 			var postTitle = null
 			if (FMtitle) {
 				postTitle = FMtitle;
@@ -137,7 +138,7 @@ async function createPost(context, publish) {
 			}
 
 			const payload = { posts: [postData] };
-			
+
 			let res;
 			try {
 				res = await axios.post(url, payload, { headers });
