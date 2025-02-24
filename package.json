@@ -68,6 +68,7 @@
     "crypto": "^1.0.1",
     "gray-matter": "^4.0.3",
     "jsonwebtoken": "^9.0.2",
-    "marked": "^15.0.6"
+    "marked": "^15.0.6",
+    "turndown": "^7.2.0"
   }
 }
