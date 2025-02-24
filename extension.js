@@ -2,6 +2,7 @@ const vscode = require('vscode');
 const jwt = require('jsonwebtoken');
 const axios = require('axios');
 const marked = require('marked');
+const matter = require('gray-matter');
 const crypto = require('crypto');
 const algorithm = 'aes-256-cbc';
 const secretKey = vscode.workspace.getConfiguration().get('code2ghost.secretKey');
@@ -93,26 +94,50 @@ async function createPost(context, publish) {
 				audience: `/admin/`
 			});
 
-			const { title, html } = await getEditor(bareUrl, authToken);
+			const { h1, html, FMtitle, FMauthors, FMtags } = await getEditor(bareUrl, authToken);
 
-			const postTitle = await vscode.window.showInputBox({ prompt: 'Enter Post Title', value: title });
-			if (!postTitle) {
-				vscode.window.showInformationMessage('Post creation cancelled.');
-				return;
+			var postTitle = null
+			if (FMtitle) {
+				postTitle = FMtitle;
+			} else {
+				postTitle = await vscode.window.showInputBox({ prompt: 'Enter Post Title', value: h1 });
+				if (!postTitle) {
+					vscode.window.showInformationMessage('Post creation cancelled.');
+					return;
+				}
 			}
 
 			// Make an authenticated request to create a post
 			const url = bareUrl + '/ghost/api/admin/posts/?source=html';
 			const headers = { Authorization: `Ghost ${authToken}` };
-			const payload = {
-				posts: [{
-					title: postTitle,
-					html: html
-				}]
+			// const payload = {
+			// 	posts: [{
+			// 		title: postTitle,
+			// 		html: html,
+			// 		authors: Array.isArray(FMauthors) ? FMauthors : [FMauthors],
+			// 		tags: Array.isArray(FMtags) ? FMtags : [FMtags]
+			// 	}]
+			// };
+
+			const postData = {
+				title: postTitle,
+				html: html
 			};
-			if (publish) {
-				payload.posts[0].status = "published";
+
+			if (FMauthors && Array.isArray(FMauthors) && FMauthors.length > 0) {
+				postData.authors = FMauthors;
 			}
+
+			if (FMtags && Array.isArray(FMtags) && FMtags.length > 0) {
+				postData.tags = FMtags;
+			}
+
+			if (publish) {
+				postData.status = "published";
+			}
+
+			const payload = { posts: [postData] };
+			
 			let res;
 			try {
 				res = await axios.post(url, payload, { headers });
@@ -166,9 +191,11 @@ async function getEditor(bareUrl, authToken) {
 	const editor = vscode.window.activeTextEditor;
 	if (editor) {
 		const filePath = editor.document.fileName.replace(/[^/\\]*$/, '');
-		var fileContent = editor.document.getText();
+		const fileContent = editor.document.getText();
+
+		const { data, content } = matter(fileContent);
 		
-		const html = marked.parse(fileContent);
+		const html = marked.parse(content);
 		var resolvedHtml = await html;
 
 		// Get all images
@@ -182,7 +209,7 @@ async function getEditor(bareUrl, authToken) {
                 const ghostImageUrl = uploadedData.images[0].url; // Get URL in Ghost
                 uploadedImages[imageUrl] = ghostImageUrl;
 
-                // Replace markdown
+                // Replace html
                 resolvedHtml = resolvedHtml.replace(imageUrl, ghostImageUrl);
             } catch (error) {
                 console.error(`Failed to upload image: ${imageUrl}`);
@@ -194,7 +221,11 @@ async function getEditor(bareUrl, authToken) {
 		const h1 = h1Match ? h1Match[1] : 'Untitled';
 
 		const resolvedHtmlWithoutTitle = resolvedHtml.replace(/<h1.*?>(.*?)<\/h1>/, '');
-		return { title: h1, html: resolvedHtmlWithoutTitle};
+
+		const FMtitle = data.title || null;
+		const FMauthors = data.authors || null;
+		const FMtags = data.tags || null;
+		return { h1, html: resolvedHtmlWithoutTitle, FMtitle, FMauthors, FMtags };
 	} else {
 		vscode.window.showInformationMessage('No file is currently open.');
 	}

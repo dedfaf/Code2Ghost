@@ -4,7 +4,7 @@
   "description": "A extension to publish local MD files to Ghost CMS",
   "publisher": "dedfaf",
   "version": "0.0.2",
-    "repository": {
+  "repository": {
     "type": "git",
     "url": "https://github.com/dedfaf/code2ghost.git"
   },
@@ -62,6 +62,7 @@
   "dependencies": {
     "axios": "^1.7.9",
     "crypto": "^1.0.1",
+    "gray-matter": "^4.0.3",
     "jsonwebtoken": "^9.0.2",
     "marked": "^15.0.6"
   }
