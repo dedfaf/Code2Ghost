@@ -36,10 +36,15 @@ function activate(context) {
 		createPost(context, 1);
 	});	
 
+	const get_posts = vscode.commands.registerCommand('code2ghost.getPosts', function () {
+		getPosts(context);
+	});
+
 	context.subscriptions.push(set_config);
 	context.subscriptions.push(get_config);
 	context.subscriptions.push(create_post_current_editor_draft);
 	context.subscriptions.push(create_post_current_editor_publish);
+	context.subscriptions.push(get_posts);
 }
 
 function deactivate() {}
@@ -238,9 +243,21 @@ async function getEditor(bareUrl, authToken) {
 	}
 }
 
-// function getPosts() {
-
-// }
+async function getPosts(context) {
+	const authToken = getAuthToken(context);
+	const { bareUrl } = getConfig(context);
+	const url = bareUrl + '/ghost/api/admin/posts/';
+	const headers = { Authorization: `Ghost ${authToken}` };
+	let res;
+	try {
+		res = await axios.get(url, { headers });
+	} catch (error) {
+		console.error(error);
+		vscode.window.showErrorMessage('Failed to get posts.');
+		return;
+	}
+	console.log(res.data.posts);
+}
 
 module.exports = {
 	activate,

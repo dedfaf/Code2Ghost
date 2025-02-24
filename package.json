@@ -43,6 +43,10 @@
       {
         "command": "code2ghost.createPostCurrentEditorPublish",
         "title": "Code2Ghost: Create and Publish Post Using Current Editor's File"
+      },
+      {
+        "command": "code2ghost.getPosts",
+        "title": "Code2Ghost: Get Posts"
       }
     ]
   },
