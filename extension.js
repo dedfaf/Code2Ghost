@@ -178,7 +178,9 @@ async function createPost(context, publish) {
 			}
 			
 			// Update front-matter
-			updateFM(res.data.posts[0]);
+			// updateFM(res.data.posts[0]);
+			// Update FM only causes updating image everytime. Sync the post, the front-matter, URL of image will be updated.
+			syncPost(context);
 			vscode.window.showInformationMessage('Created Post successful at ' + `[${bareUrl}/ghost/#/editor/post/${res.data.posts[0].id}](${bareUrl}/ghost/#/editor/post/${res.data.posts[0].id})`);
 			// vscode.commands.executeCommand('workbench.action.closeActiveEditor');	
 		}
@@ -239,8 +241,9 @@ async function updatePost(context) {
 			}
 		
 			// Update front-matter
-			// console.log(res.data.posts[0].updated_at);
-			updateFM(res.data.posts[0]);
+			// updateFM(res.data.posts[0]);
+			// Update FM only causes updating image everytime. Sync the post, the front-matter, URL of image will be updated.
+			syncPost(context);
 			vscode.window.showInformationMessage('Updated Post successful at ' + `[${bareUrl}/ghost/#/editor/post/${res.data.posts[0].id}](${bareUrl}/ghost/#/editor/post/${res.data.posts[0].id})`);
 			// vscode.commands.executeCommand('workbench.action.closeActiveEditor');
 		}
@@ -392,7 +395,9 @@ async function getEditor(bareUrl, authToken) {
 
 		// Get all images
 		// const imageMatches = [...fileContent.matchAll(/!\[([^\]]*)\]\(([^)]+)\)/g)].map(match => match[2]);
-		const imageMatches = [...resolvedHtml.matchAll(/<img[^>]*src=["'](.*?)["'][^>]*>/g)].map(match => match[1]);
+		const imageMatches = [...resolvedHtml.matchAll(/<img[^>]*src=["'](.*?)["'][^>]*>/g)]
+			.map(match => match[1])
+			.filter(imageUrl => !imageUrl.startsWith('http') && !imageUrl.startsWith('https'));
 
 		const uploadedImages = {};
         for (let imageUrl of imageMatches) {
