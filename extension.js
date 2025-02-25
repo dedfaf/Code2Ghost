@@ -226,7 +226,13 @@ async function updatePost(context) {
 			}
 			
 			if (res.status != 200) {
-				vscode.window.showErrorMessage('Failed to update post.');
+				if (res.status == 404) {
+					vscode.window.showErrorMessage('Post not found. Do the post exist?');
+				} else if (res.status == 409) {
+					vscode.window.showErrorMessage('Post has been updated since you last get it, please get the post again and modify from the newer version.');
+				} else {
+					vscode.window.showErrorMessage('Failed to update post.');
+				}
 			} else {
 				vscode.window.showInformationMessage('Updated Post successful at ' + `[${bareUrl}/ghost/#/editor/post/${res.data.posts[0].id}](${bareUrl}/ghost/#/editor/post/${res.data.posts[0].id})`);
 				// vscode.commands.executeCommand('workbench.action.closeActiveEditor');	
