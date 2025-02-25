@@ -34,14 +34,9 @@ The update Process:
 1. run `Code2Ghost: Get Post in new tab` to get the post you want to update. 
 
     This will gets you new editor tab with front matter (contains post `id` & `updated_at`), which is needed for the update process.
+    - Or run `Code2Ghost: Sync Post By Post id provided in front-matter (Current editor)`
 2. run `Code2Ghost: Update Post Using Current Editor's file` and wait, you will get a link to the post if the post is updated successful.
 
-Continuous update in the same editor tab is cuurently not allowed because `updated_at` must be updated since each update.
-
-> TODO: when post is successfully updated, update the current editor's front matter with the new `updated_at` value.
-
-## TODO:
-
-Update Whole on create
-
-Identify Image source
+> Currently, every time a post is created or updated, the local markdown file is also automatically synced. The sync action aim for 2 purpose:
+> - To update `updated_at` in front-matter in order to update the post Continuously.
+> - To convert the local markdown image links into URLs used by Ghost. Otherwise, if the post is updated again using the same file, the local images will be uploaded repeatedly.
