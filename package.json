@@ -24,6 +24,11 @@
           "type": "string",
           "default": "vOVH6sdmpNWjRRIqCc7rdxs01lwHzfr3",
           "description": "Secret key for encryption"
+        },
+        "code2ghost.showFrontMatterComment": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show comment in front matter. You can turn it off if you know what you are doing"
         }
       }
     },
