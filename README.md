@@ -39,3 +39,9 @@ The update Process:
 Continuous update in the same editor tab is cuurently not allowed because `updated_at` must be updated since each update.
 
 > TODO: when post is successfully updated, update the current editor's front matter with the new `updated_at` value.
+
+## TODO:
+
+Update Whole on create
+
+Identify Image source

@@ -56,6 +56,10 @@
       {
         "command": "code2ghost.updatePostCurrentEditor",
         "title": "Code2Ghost: Update Post Using Current Editor's file"
+      },
+      {
+        "command": "code2ghost.syncPostCurrentEditor",
+        "title": "Code2Ghost: Sync Post By Post id provided in front-matter (Current editor)"
       }
     ]
   },

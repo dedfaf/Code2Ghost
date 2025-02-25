@@ -14,6 +14,8 @@ const algorithm = 'aes-256-cbc';
 const secretKey = vscode.workspace.getConfiguration().get('code2ghost.secretKey');
 const iv = crypto.randomBytes(16);
 
+const ERR_NO_EDITOR = 'No active editor found.';
+const ERR_404 = 'Post not found. Do the post exist?';
 
 /**
  * @param {vscode.ExtensionContext} context
@@ -50,12 +52,17 @@ function activate(context) {
 		updatePost(context);
 	});
 
+	const sync_post_current_editor = vscode.commands.registerCommand('code2ghost.syncPostCurrentEditor', async function () {
+		syncPost(context);
+	});
+
 	context.subscriptions.push(set_config);
 	context.subscriptions.push(get_config);
 	context.subscriptions.push(create_post_current_editor_draft);
 	context.subscriptions.push(create_post_current_editor_publish);
 	context.subscriptions.push(get_post);
 	context.subscriptions.push(update_post_current_editor);
+	context.subscriptions.push(sync_post_current_editor);
 }
 
 function deactivate() {}
@@ -220,7 +227,7 @@ async function updatePost(context) {
 			} catch (error) {
 				console.error(error);
 				if (error.response.status == 404) {
-					vscode.window.showErrorMessage('Post not found. Do the post exist?');
+					vscode.window.showErrorMessage(ERR_404);
 					return;
 				}
 				if (res.status == 409) {
@@ -236,6 +243,43 @@ async function updatePost(context) {
 			updateFM(res.data.posts[0]);
 			vscode.window.showInformationMessage('Updated Post successful at ' + `[${bareUrl}/ghost/#/editor/post/${res.data.posts[0].id}](${bareUrl}/ghost/#/editor/post/${res.data.posts[0].id})`);
 			// vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+		}
+	);
+}
+
+async function syncPost(context) {
+	vscode.window.withProgress(
+		{
+			location: vscode.ProgressLocation.Notification,
+			title: 'Syncing Post...',
+			cancellable: false
+		},
+		async (progress, token) => {
+			const FMid = getPostFM().id;
+			const post = await getPostById(context, FMid);
+			if (post) {
+				if (post.updated_at == getPostFM().updated_at) {
+					vscode.window.showInformationMessage('The post is already up-to-date.');
+					return;
+				}
+				const editor = vscode.window.activeTextEditor;
+				if (editor) {
+					const newContent = parseFM(post) + '\n' + turndownService.turndown(post.html);
+					editor.edit(editBuilder => {
+						const document = editor.document;
+						const lastLine = document.lineAt(document.lineCount - 1);
+						const range = new vscode.Range(new vscode.Position(0, 0), lastLine.range.end);
+						editBuilder.delete(range);
+						editBuilder.insert(new vscode.Position(0, 0), newContent);
+					});
+				} else {
+					vscode.window.showInformationMessage(ERR_NO_EDITOR);
+					return;
+				}
+			} else {
+				return;
+			}
+			vscode.window.showInformationMessage('Post synced.');
 		}
 	);
 }
@@ -320,7 +364,18 @@ function updateFM(FMdata) {
 			editBuilder.insert(new vscode.Position(0, 0), newContent);
 		});
 	} else {
-		vscode.window.showInformationMessage('No file is currently open.');
+		vscode.window.showInformationMessage(ERR_NO_EDITOR);
+	}
+}
+
+function getPostFM() {
+	const editor = vscode.window.activeTextEditor;
+	if (editor) {
+		const fileContent = editor.document.getText();
+		const { data } = matter(fileContent);
+		return data;
+	} else {
+		vscode.window.showInformationMessage(ERR_NO_EDITOR);
 	}
 }
 
@@ -370,7 +425,7 @@ async function getEditor(bareUrl, authToken) {
 		const FMstatus = data.status || null;
 		return { h1, html: resolvedHtmlWithoutTitle, FMtitle, FMauthors, FMtags, FMid, FMupdated_at, FMstatus };
 	} else {
-		vscode.window.showInformationMessage('No file is currently open.');
+		vscode.window.showInformationMessage(ERR_NO_EDITOR);
 	}
 }
 
@@ -407,6 +462,28 @@ async function getPost(context) {
 			await vscode.window.showTextDocument(document);
 		}
 	}
+}
+
+async function getPostById(context, id) {
+	const authToken = getAuthToken(context);
+	const { bareUrl } = getConfig(context);
+	const url = bareUrl + '/ghost/api/admin/posts/' + id + '?formats=html';
+	const headers = {
+		Authorization: `Ghost ${authToken}`
+	};
+	let res;
+	try {
+		res = await axios.get(url, { headers });
+	} catch (error) {
+		if (error.response.status == 404) {
+			vscode.window.showErrorMessage(ERR_404);
+			return;
+		}
+		console.error(error);
+		vscode.window.showErrorMessage('Failed to sync posts.');
+		return;
+	}
+	return res.data.posts[0];
 }
 
 module.exports = {
